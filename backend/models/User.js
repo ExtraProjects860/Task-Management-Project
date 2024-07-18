@@ -3,9 +3,12 @@ const usersCollection = FireBase.getConnection().collection("users");
 
 class User {
     constructor(email, name, password) {
+        this.id = null;
         this.email = email;
         this.name = name;
         this.password = password;
+        this.password_reset_token = null; // não mexer ainda, pois precisa ser planejado
+        this.created_at = new Date().toISOString();
         this.tasks_lists = [];
     }
 
@@ -37,4 +40,3 @@ class User {
 }
 
 module.exports = User;
-

@@ -4,12 +4,20 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --require @babel/register test/userControllerTest.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "firebase-admin": "^12.2.0"
+    "bcrypt": "5.1.1",
+    "chai": "^5.1.1",
+    "firebase-admin": "^12.2.0",
+    "mocha": "^10.6.0"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.24.8",
+    "@babel/register": "^7.24.6",
+    "chai-as-promised": "^8.0.0"
   }
 }

@@ -12,13 +12,13 @@ class Task {
 
     static toPlainObject(task) {
         return {
-            id_task: id_task,
-            task_name: task_name,
-            task_description: task_description,
-            task_priorite: task_priorite,
-            task_status: task_status,
-            task_initialDate: task_initialDate,
-            task_finalDate: task_finalDate,
+            id_task: task.id_task,
+            task_name: task.task_name,
+            task_description: task.task_description,
+            task_priorite: task.task_priorite,
+            task_status: task.task_status,
+            task_initialDate: task.task_initialDate,
+            task_finalDate: task.task_finalDate,
         }
     }
 
