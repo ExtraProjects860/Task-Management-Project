@@ -104,10 +104,30 @@ describe('UserController Tests', function() {
         const createdUser = await UserController.createUser(user.email, user.name, user.password);
         expect(createdUser).to.have.property('id');
     
-        // Supondo que createSession retorna um token ou algo similar
-        const retrievedUser = await UserController.createSessionUser(user.email, password);
-        expect(retrievedUser).to.have.property('email', email);
-        expect(retrievedUser).to.have.property('name', name);
+        const { user: sessionUser, sessionToken } = await UserController.createSessionUser(user.email, password);
+        expect(sessionUser).to.have.property('email', email);
+        expect(sessionUser).to.have.property('name', name);
+        expect(sessionToken).to.be.a('string');
+    });
+
+    it('should logout a user session', async () => {
+        const email = "logout-user-1721330968230@example.com";
+        const name = 'Logout User';
+        const password = 'password123';
+        const user = await User.create(email, name, password);
+        const createdUser = await UserController.createUser(user.email, user.name, user.password);
+        expect(createdUser).to.have.property('id');
+    
+        const { sessionToken } = await UserController.createSessionUser(user.email, password);
+        expect(sessionToken).to.be.a('string');
+    
+        const userDocBeforeLogout = await usersCollection.doc(createdUser.id.toString()).get();
+        expect(userDocBeforeLogout.data().session_token).to.equal(sessionToken);
+    
+        await UserController.logoutSessionUser(createdUser);
+    
+        const userDocAfterLogout = await usersCollection.doc(createdUser.id.toString()).get();
+        expect(userDocAfterLogout.data().session_token).to.be.null;
     });
 
     it('should retrieve a user by email', async () => {
