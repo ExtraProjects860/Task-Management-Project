@@ -25,7 +25,8 @@ class UserController {
                 email: user.email,
                 name: user.name,
                 password: user.password,
-                password_reset_token: null,
+                session_token: user.session_token,
+                password_reset_token: user.password_reset_token,
                 create_at: user.created_at,
                 tasks_lists: user.tasks_lists || []
             });
@@ -70,27 +71,37 @@ class UserController {
             const userDoc = userQuerySnapshot.docs[0];
             const userData = userDoc.data();
 
+            if (userData.session_token) {
+                throw new Error("The user is already logged in. Try logging in again with another user.")
+            }
+
             const isPasswordMatch = await bcrypt.compare(password, userData.password);
 
             if (!isPasswordMatch) {
                 throw new Error("Invalid password. Please try again.");
             }
 
-            const user = new User(userData.email, userData.name, userData.password);
+            const sessionToken = crypto.randomBytes(this.saltRounds).toString('hex');
+            await userDoc.ref.update({ session_token: sessionToken })
 
-            return user;
-            
+            return { user: userData, sessionToken };
         } catch (error) {
-            throw new Error();
+            throw new Error("Failed to create session: " + error.message);
         }
     }
 
-    static async logoutSessionUser() {
+    static async logoutSessionUser(user) {
         // lembrar de colocar lógica depois para terminar a sessão do usuário
         try {
-            
+            const userDoc = await usersCollection.doc(user.id.toString()).get();
+
+            if(!userDoc.exists) {
+                throw new Error("User not found.");
+            }
+
+            await userDoc.ref.update({ session_token: null });
         } catch (error) {
-            throw new Error();
+            throw new Error("Failed to logout session: " + error.message);
         }
     }
 
