@@ -4,6 +4,7 @@ const FireBase = require("../config/Firebase");
 const usersCollection = FireBase.getConnection().collection("users");
 const User = require("../models/User");
 const TaskList = require("../models/TaskList");
+const EmailService = require('../util/EmailService');
 
 class UserController {
 
@@ -84,26 +85,60 @@ class UserController {
             throw new Error("Failed to modify user data: " + error.message);
         }
     }
+
+    static async requestPasswordReset(email) {
+        try {
+            const userDoc = await usersCollection.where('email', '==', email).get();
+    
+            if (userDoc.empty) {
+                throw new Error("Email not found");
+            }
+    
+            const user = userDoc.docs[0].data();
+            const token = crypto.randomBytes(20).toString('hex');
+            const tokenExpiration = Date.now() + 30 * 60 * 1000;
+    
+            await usersCollection.doc(user.idUser.toString()).update({
+                'passwordResetToken.token': token,
+                'passwordResetToken.tokenExpiration': tokenExpiration
+            });
+    
+            const emailText = `You requested a password reset. Please use the following token to reset your password: ${token}`;
+
+            await EmailService.sendEmail(user.email, "Password Reset", emailText);
+        } catch (error) {
+            throw new Error("Failed to request password reset: " + error.message);
+        }
+    }
     
     // Troca a senha caso usuário tenha esquecido
-    static async forgotPasswordModify(email, name, newPassword) {
+    static async forgotPasswordModify(email, newPassword, tokenPassword) {
         try {
-            const token = crypto.randomBytes(this.saltRounds).toString('hex');
-            // Implementar depois, pois precisará verificar como será feito no frontend
+            const userDoc = await usersCollection.where('email', '==', email).get();
+    
+            if (userDoc.empty) {
+                throw new Error("Email not found");
+            }
+    
+            const user = userDoc.docs[0].data();
+            
+            const currenTime = Date.now();
+            if (user.passwordResetToken.token !== tokenPassword || !user.passwordResetToken.token) {
+                throw new Error("Token is invalid or missing, try again");
+            }
 
-            // const user = await this.getUser(email, name);
-            // if (!user) {
-            //     throw new Error("User not found.");
-            // }
+            if (user.passwordResetToken.token < currenTime) {
+                throw new Error("Token has expired, please request a new one");
+            }
     
-            // const hashedPassword = await bcrypt.hash(newPassword, this.saltRounds);
+            const hashedPassword = await bcrypt.hash(newPassword, this.saltRounds);
     
-            // await usersCollection.doc(user.id.toString()).update({
-            //     password: hashedPassword
-            // });
+            await usersCollection.doc(user.idUser.toString()).update({
+                password: hashedPassword,
+                'passwordResetToken.token': null,
+                'passwordResetToken.tokenExpiration': null
+            });
     
-            // return { message: "Password updated successfully." };
-
         } catch (error) {
             throw new Error("Failed to modify password: " + error.message);
         }
