@@ -7,7 +7,10 @@ class User {
         this.email = email;
         this.name = name;
         this.password = password;
-        this.passwordResetToken = null; // não mexer ainda, pois precisa ser planejado
+        this.passwordResetToken = {
+            token: null,
+            tokenExpiration: null
+        };
         this.createdAt = new Date().toISOString();
         this.tasksLists = [];
     }
