@@ -46,7 +46,6 @@ Este projeto está sendo desenvolvido pela equipe de Desenvolvimento Web:
 - [Gustavo Rodrigues](https://github.com/Gvcrodrigues99) Back-end
 - [Jamil Salomão](https://github.com/jamilsalomao) Front-end
 - [Italo Butinholi](https://github.com/ItaloBM) Front-end
-- [Pedro Marcelino](https://github.com/marcelinopedro) FullStack
 
 ## Licença
 
