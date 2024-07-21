@@ -1,4 +1,6 @@
 const nodemailer = require("nodemailer");
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config({ path: '../.env'});
 
 class EmailService {
@@ -6,18 +8,38 @@ class EmailService {
         this.transporter = nodemailer.createTransport({
             service: "gmail",
             auth: {
-                user: "",
+                user: "oversouls11@gmail.com",
                 pass: "jdrr ixya yyzz prrt" // colocar senha de app aqui
             }
         });
     }
 
-    async sendEmail(to, subject, text) {
+    readHTMLTemplate(templatePath) {
+        return fs.readFileSync(templatePath, "utf-8");
+    }
+
+    replacePlaceholders(template, replacements) {
+        return template.replace(/{title_html}/g, replacements.title)
+                       .replace(/{email_html}/g, replacements.email)
+                       .replace(/{text_html}/g, replacements.text)
+                       .replace(/{token_html}/g, replacements.token);
+    }
+
+    async sendEmail(to, subject, token) {
+        const templatePath = path.join(__dirname, "static", "corpo_email.html");
+        const template = this.readHTMLTemplate(templatePath);
+        const emailHTML = this.replacePlaceholders(template, {
+            title: "Alerta de redefinição de senha",
+            email: to,
+            text: "Você solicitou uma redefinição de senha. Por favor, use o seguinte token para redefinir sua senha:",
+            token: token
+        });
+
         const mailOptions = {
-            from: "",
+            from: "oversouls11@gmail.com",
             to: to,
             subject: subject,
-            text: text
+            html: emailHTML
         };
 
         try {
