@@ -25,7 +25,7 @@ class UserController {
 
             await usersCollection.doc(user.idUser.toString()).set(User.toPlainObject(user));
 
-            return user; // verificar de retornar o usuário dps
+            return user;
         } catch(error) {
             throw new Error("Failed to create user: " + error.message);
         }
@@ -58,9 +58,11 @@ class UserController {
     static async getUserById(id) {
         try {
             const userDoc = await usersCollection.doc(id.toString()).get();
+
             if (!userDoc.exists) {
                 throw new Error("User not found.");
             }
+
             return userDoc.data();
         } catch (error) {
             throw new Error("Failed to get user: " + error.message);
@@ -112,6 +114,32 @@ class UserController {
     
     // Troca a senha caso usuário tenha esquecido
     static async forgotPasswordModify(email, newPassword, tokenPassword) {
+
+        async function validatePassword(newPassword, currentPassword) {
+            const passwordMatch = await bcrypt.compare(newPassword, currentPassword);
+
+            if (passwordMatch) {
+                throw new Error("This password is the same as the current one. Try another.");
+            }
+        }
+
+        async function validateToken(tokenPassword, passwordResetToken, userId) {
+            if (!passwordResetToken.token || passwordResetToken.token !== tokenPassword) {
+                throw new Error("Token is invalid or missing, try again");
+            }
+        
+            const currentTime = Date.now();
+        
+            if (passwordResetToken.tokenExpiration < currentTime) {
+                usersCollection.doc(userId).update({
+                    'passwordResetToken.token': null,
+                    'passwordResetToken.tokenExpiration': null
+                });
+                throw new Error("Token has expired, please request a new one");
+            }
+        }
+
+        // Código principal do método forgotPasswordModify
         try {
             const userDoc = await usersCollection.where('email', '==', email).get();
     
@@ -121,19 +149,9 @@ class UserController {
     
             const user = userDoc.docs[0].data();
 
-            if (user.passwordResetToken.token !== tokenPassword || !user.passwordResetToken.token) {
-                throw new Error("Token is invalid or missing, try again");
-            }
+            await validatePassword(newPassword, user.password);
 
-            const currenTime = Date.now();
-
-            if (user.passwordResetToken.tokenExpiration < currenTime) {
-                await usersCollection.doc(user.idUser.toString()).update({
-                    'passwordResetToken.token': null,
-                    'passwordResetToken.tokenExpiration': null
-                });
-                throw new Error("Token has expired, please request a new one");
-            }
+            await validateToken(tokenPassword, user.passwordResetToken, user.idUser.toString());
     
             const hashedPassword = await bcrypt.hash(newPassword, this.saltRounds);
     
@@ -142,7 +160,6 @@ class UserController {
                 'passwordResetToken.token': null,
                 'passwordResetToken.tokenExpiration': null
             });
-    
         } catch (error) {
             throw new Error("Failed to modify password: " + error.message);
         }
@@ -166,7 +183,6 @@ class UserController {
             }
 
             await usersCollection.doc(userRecord.idUser.toString()).delete();
-   
         } catch (error) {
             throw new Error("Failed to delete user: " + error.message);
         }
