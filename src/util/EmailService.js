@@ -26,27 +26,32 @@ class EmailService {
     }
 
     async sendEmail(to, subject, token) {
-        const templatePath = path.join(__dirname, "static", "corpo_email.html");
-        const template = this.readHTMLTemplate(templatePath);
-        const emailHTML = this.replacePlaceholders(template, {
-            title: "Alerta de redefinição de senha",
-            email: to,
-            text: "Você solicitou uma redefinição de senha. Por favor, use o seguinte token para redefinir sua senha:",
-            token: token
-        });
-
-        const mailOptions = {
-            from: "oversouls11@gmail.com",
-            to: to,
-            subject: subject,
-            html: emailHTML
-        };
-
         try {
-            await this.transporter.sendMail(mailOptions);
-            console.log(`Email sent to ${to}`);
+            const templatePath = path.join(__dirname, "static", "corpo_email.html");
+            const template = this.readHTMLTemplate(templatePath);
+            const emailHTML = this.replacePlaceholders(template, {
+                title: "Alerta de redefinição de senha",
+                email: to,
+                text: "Você solicitou uma redefinição de senha. Por favor, use o seguinte token para redefinir sua senha:",
+                token: token
+            });
+    
+            const mailOptions = {
+                from: "oversouls11@gmail.com",
+                to: to,
+                subject: subject,
+                html: emailHTML
+            };
+    
+            try {
+                await this.transporter.sendMail(mailOptions);
+                console.log(`Email sent to ${to}`);
+            } catch (error) {
+                console.error(`Error sending email to ${to}:`, error);
+                throw new Error(`Error sending email to ${to}:`, error);
+            }
         } catch (error) {
-            console.error(`Error sending email to ${to}:`, error);
+            throw new Error("Error sending email something went wrong:" + error.message);
         }
     }
 }
