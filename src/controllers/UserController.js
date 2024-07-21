@@ -86,6 +86,7 @@ class UserController {
         }
     }
 
+    // Envia um email para o usuário com token
     static async requestPasswordReset(email) {
         try {
             const userDoc = await usersCollection.where('email', '==', email).get();
@@ -95,17 +96,15 @@ class UserController {
             }
     
             const user = userDoc.docs[0].data();
-            const token = crypto.randomBytes(20).toString('hex');
+            const token = crypto.randomBytes(4).toString('hex');
             const tokenExpiration = Date.now() + 30 * 60 * 1000;
     
             await usersCollection.doc(user.idUser.toString()).update({
                 'passwordResetToken.token': token,
                 'passwordResetToken.tokenExpiration': tokenExpiration
             });
-    
-            const emailText = `You requested a password reset. Please use the following token to reset your password: ${token}`;
 
-            await EmailService.sendEmail(user.email, "Password Reset", emailText);
+            await EmailService.sendEmail(user.email, "Redefinição de senha", token);
         } catch (error) {
             throw new Error("Failed to request password reset: " + error.message);
         }
@@ -121,13 +120,18 @@ class UserController {
             }
     
             const user = userDoc.docs[0].data();
-            
-            const currenTime = Date.now();
+
             if (user.passwordResetToken.token !== tokenPassword || !user.passwordResetToken.token) {
                 throw new Error("Token is invalid or missing, try again");
             }
 
-            if (user.passwordResetToken.token < currenTime) {
+            const currenTime = Date.now();
+
+            if (user.passwordResetToken.tokenExpiration < currenTime) {
+                await usersCollection.doc(user.idUser.toString()).update({
+                    'passwordResetToken.token': null,
+                    'passwordResetToken.tokenExpiration': null
+                });
                 throw new Error("Token has expired, please request a new one");
             }
     
