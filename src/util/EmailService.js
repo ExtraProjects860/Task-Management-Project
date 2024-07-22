@@ -8,8 +8,8 @@ class EmailService {
         this.transporter = nodemailer.createTransport({
             service: "gmail",
             auth: {
-                user: "oversouls11@gmail.com",
-                pass: "jdrr ixya yyzz prrt" // colocar senha de app aqui
+                user: "",
+                pass: "" // colocar senha de app aqui
             }
         });
     }
@@ -37,7 +37,7 @@ class EmailService {
             });
     
             const mailOptions = {
-                from: "oversouls11@gmail.com",
+                from: "",
                 to: to,
                 subject: subject,
                 html: emailHTML
