@@ -3,12 +3,12 @@ const crypto = require("crypto");
 const FireBase = require("../config/Firebase");
 const usersCollection = FireBase.getConnection().collection("users");
 const User = require("../models/User");
-const TaskList = require("../models/TaskList");
 const EmailService = require('../util/EmailService');
 
 class UserController {
 
     static saltRounds = 10;
+
 
     // Cria usuário 
     static async createUser(email, name, password) {
@@ -31,8 +31,9 @@ class UserController {
         }
     }
 
+
     // Recupera usuário para logar
-    static async getUser(email, password) {
+    static async loginUser(email, password) {
         try {
             const userDoc = await usersCollection.where('email', '==', email).get();
 
@@ -54,7 +55,8 @@ class UserController {
         }
     }
 
-    // Recupera usuário a partir do id
+
+    // Recupera usuário a partir do id (método não sendo utilizado no momento, pois a aplicação está utilizando sessão)
     static async getUserById(id) {
         try {
             const userDoc = await usersCollection.doc(id.toString()).get();
@@ -68,6 +70,7 @@ class UserController {
             throw new Error("Failed to get user: " + error.message);
         }
     }
+
 
     // Modifica os dados do usuário
     static async updateDataUser(user, newName, newPassword) {
@@ -87,6 +90,7 @@ class UserController {
             throw new Error("Failed to modify user data: " + error.message);
         }
     }
+
 
     // Envia um email para o usuário com token
     static async requestPasswordReset(email) {
@@ -112,6 +116,7 @@ class UserController {
         }
     }
     
+
     // Troca a senha caso usuário tenha esquecido
     static async forgotPasswordModify(email, newPassword, tokenPassword) {
 
@@ -135,6 +140,7 @@ class UserController {
                     'passwordResetToken.token': null,
                     'passwordResetToken.tokenExpiration': null
                 });
+                
                 throw new Error("Token has expired, please request a new one");
             }
         }
@@ -165,6 +171,7 @@ class UserController {
         }
     }
 
+
     // Deleta usuário do banco de dados
     static async deleteUser(user, password) {
         try {
@@ -188,68 +195,7 @@ class UserController {
         }
     }
 
-    // Pega a lista de tarefas com todas as listas de tarefas
-    static async getAllTaskList(user) {
-        try {
-            const userDoc = await usersCollection.doc(user.idUser.toString()).get();
-
-            if (!userDoc.exists) {
-                throw new Error("User not found.");
-            }
-
-            return userDoc.data().tasksLists;
-        } catch (error) {
-            throw new Error("Failed to get task lists: " + error.message);
-        }
-    }
-
-    // Cria uma nova lista de tarefas
-    static async createTaskList(user, taskListName, taskListDescription) {
-        try {
-            const taskListIds = user.tasksLists.map(taskList => taskList.idTaskList);
-            
-            let newIdTaskList = 1;
-            while (taskListIds.includes(newIdTaskList)) {
-                newIdTaskList ++;
-            }
-            
-            const newTaskList = TaskList.toPlainObject(new TaskList(
-                newIdTaskList,
-                taskListName,
-                taskListDescription
-            ));
-
-            user.tasksLists.push(newTaskList);
-
-            await usersCollection.doc(user.idUser.toString()).update({
-                tasksLists: user.tasksLists
-            });
-
-            return newIdTaskList;
-        } catch (error) {
-            throw new Error("Failed to create task list: " + error.message);
-        }
-    }
-
-    // Deleta lista de tarefas específica
-    static async deleteTaskList(user, taskListId) {
-        try {
-            const taskListIndex = user.tasksLists.findIndex(taskList => taskList.idTaskList === taskListId);
-
-            if (taskListIndex === -1) {
-                throw new Error("Task list not found.");
-            }
-
-            user.tasksLists.splice(taskListIndex, 1);
-            await usersCollection.doc(user.idUser.toString()).update({
-                tasksLists: user.tasksLists
-            });
-
-            return user.taskList;
-        } catch (error) {
-            throw new Error("Failed to delete task list: " + error.message);
-        }
-    }
 }
+
 
 module.exports = UserController;
