@@ -1,19 +1,43 @@
 const FireBase = require("../config/Firebase");
 const usersCollection = FireBase.getConnection().collection("users");
+const Task = require("../models/Task");
 
 class TaskController {
 
 
     // Cria Tarefa
-    static async createTask(user, taskData) {
+    static async createTask(user, taskListId, taskData) {
         try {
-            // terá que verificar o id disponível e criar um único e sequencial
+            const taskListIndex = user.tasksLists.findIndex(taskList => taskList.idTaskList === taskListId);
+
+            if (taskListIndex === -1) {
+                throw new Error(`Task list with idTaskList ${taskListId} not found`);
+            }
+
+            const taskIds = user.tasksLists[taskListIndex].tasks.map(task => task.idTask);
+                
+            let newIdTask = 1;
+            while (taskIds.includes(newIdTask)) {
+                newIdTask ++;
+            }
+                
+            const newTask = Task.toPlainObject(new Task(
+                newIdTask,
+                taskData.taskName,
+                taskData.taskDescription,
+                taskData.taskPriorite,
+                taskData.taskStatus,
+                taskData.taskInitialDate,
+                taskData.taskFinalDate
+            ));
+    
+            user.tasksLists[taskListIndex].tasks.push(newTask);
         
-            // depois disso terá que acessar dentro de tasks_lists a task_list correspondente
-        
-            // terá de criar a task instanciando o objeto Task e converter para objeto simples
-        
-            // terá que dar um update no doc do firebase
+            await usersCollection.doc(user.idUser.toString()).update({
+                tasksLists: user.tasksLists
+            });
+
+            return user;
         } catch (error) {
             throw new Error("Failed to create task: " + error.message);
         }
@@ -21,36 +45,86 @@ class TaskController {
     
 
     // Modifica tarefa específica
-    static async updateTask() {
+    static async updateTask(user, taskListId, taskId, newTaskData) {
         try {
-            // precisará do id da lista de tarefas, irá ter de acessar a lista e procurar pelos dados que já existem
+            const taskListIndex = user.tasksLists.findIndex(taskList => taskList.idTaskList === taskListId);
 
-            // no caso aqui é a manipulação dos dados das tarefas
+            if (taskListIndex === -1) {
+                throw new Error("Task list not found.");
+            }
 
-            // precisará trocar os dados e dar um update no doc do firebase
+            const taskIndex = user.tasksLists[taskListIndex].tasks.findIndex(task => task.idTask === taskId);
+
+            if (taskIndex === -1) {
+                throw new Error("Task not found.");
+            }
+
+            const task = user.tasksLists[taskListIndex].tasks[taskIndex];
+            task.taskName = newTaskData.taskName;
+            task.taskDescription = newTaskData.taskDescription;
+            task.taskPriorite = newTaskData.taskPriorite;
+            task.taskStatus = newTaskData.taskStatus;
+            task.taskInitialDate = newTaskData.taskInitialDate;
+            task.taskFinalDate = newTaskData.taskFinalDate;
+
+            await usersCollection.doc(user.idUser.toString()).update({
+                tasksLists: user.tasksLists
+            });
+
+            return user;
         } catch (error) {
-            throw new Error();
+            throw new Error("Failed to update: " + error.message);
         }
     }
 
 
-    static async deleteTaskList() {
+    static async deleteTask(user, taskListId, taskId) {
         try {
-            
+            const taskListIndex = user.tasksLists.findIndex(taskList => taskList.idTaskList === taskListId);
+
+            if (taskListIndex === -1) {
+                throw new Error("Task list not found.");
+            }
+
+            const taskIndex = user.tasksLists[taskListIndex].tasks.findIndex(task => task.idTask === taskId);
+
+            if (taskIndex === -1) {
+                throw new Error("Task not found.");
+            }
+
+            user.tasksLists[taskListIndex].tasks.splice(taskIndex, 1);
+
+            await usersCollection.doc(user.idUser.toString()).update({
+                tasksLists: user.tasksLists
+            });
+
+            return user;
         } catch (error) {
-            throw new Error();
+            throw new Error("Failed to delete: " + error.message);
         }
     }
 
 
     // Pega todas as tarefas
-    static async getAllTask() {
+    static async getAllTask(user, taskListId) {
         try {
-            // Terá que acessar o dentro do usuário o seu id, após isso acessar a tasks_lists
-    
-            // Isso é uma forma de retornar todos os documentos const userDoc = await usersCollection.doc(user.id.toString()).get();
+            const userDoc = await usersCollection.doc(user.idUser.toString()).get();
+
+            if (!userDoc.exists) {
+                throw new Error("User not found.");
+            }
+
+            const tasksLists = userDoc.data().tasksLists;
+
+            const taskList = tasksLists.find(list => list.idTaskList === taskListId);
+
+            if (!taskList) {
+                throw new Error("Task list not found.");
+            }
+
+            return taskList.tasks;
         } catch (error) {
-                throw new Error();
+            throw new Error("Failed to get task: " + error.message);
         }
     }
     
