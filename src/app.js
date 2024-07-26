@@ -9,7 +9,7 @@ const port = process.env.PORT || 3001;
 
 const userRoutes = require("./routes/userRoutes.js");
 const taskListRoutes = require("./routes/taskListRoutes.js");
-// const taskRoutes = require("./routes/taskRoutes.js");
+const taskRoutes = require("./routes/taskRoutes.js");
 
 const routeMiddleware = require("./middlewares/routeMiddleware");
 const jsonErrorMiddleware = require("./middlewares/jsonErrorMiddleware");
@@ -27,7 +27,7 @@ app.use(session({
  
 app.use("/user", userRoutes);
 app.use("/tasks-lists", isAuthenticated, taskListRoutes);
-// app.use("/task", isAuthenticated, taskRoutes);
+app.use("/tasks", isAuthenticated, taskRoutes);
 
 app.use(routeMiddleware);
 app.use(jsonErrorMiddleware);

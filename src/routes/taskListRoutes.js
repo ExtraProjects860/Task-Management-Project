@@ -10,7 +10,7 @@ router.get("/all", async (req, res) => {
 
         const taskLists = await TaskListControler.getAllTaskList(user);
 
-        res.status(200).json({ tasksLists: taskLists });
+        res.status(200).json({ message: "Task lists retrieved successfully", tasksLists: taskLists });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -27,7 +27,7 @@ router.post("/create", async (req, res) => {
 
         req.session.user = updatedUser;
 
-        res.status(201).json({ id: updatedUser.tasksLists.slice(-1)[0].idTaskList });
+        res.status(201).json({ message: "Task list created successfully", id: updatedUser.tasksLists.slice(-1)[0].idTaskList });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -45,7 +45,7 @@ router.put("/update/:taskListId", async (req, res) => {
 
         req.session.user = updatedUser;
 
-        res.status(200).json({ tasksLists: updatedUser.tasksLists });
+        res.status(200).json({ message: "Task list updated successfully", tasksLists: updatedUser.tasksLists });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -62,7 +62,7 @@ router.delete("/delete/:taskListId", async (req, res) => {
 
         req.session.user = updatedUser;
         
-        res.status(204).send();
+        res.status(204).send({ message: "Task list deleted successfully" });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }

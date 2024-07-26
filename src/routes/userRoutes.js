@@ -20,7 +20,7 @@ router.post("/create", async (req, res) => {
     try {
         const user = await UserController.createUser(email, name, password);
 
-        res.status(201).json(user);
+        res.status(201).json({ message: "User created successfully", user });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -33,7 +33,7 @@ router.post("/forgot-password", async (req, res) => {
     try {
         await UserController.forgotPasswordModify(email, newPassword);
 
-        res.status(200).json();
+        res.status(200).json({ message: "Password updated successfully" });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -48,7 +48,7 @@ router.post("/login", async (req, res) => {
 
         req.session.user = user;
 
-        res.status(200).json(req.session.user);
+        res.status(200).json({ message: `Logged in successfully ${user.email}`, user: req.session.user });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -76,7 +76,7 @@ router.put("/update", isAuthenticated, async (req, res) => {
 
         req.session.user = updatedUser;
 
-        res.status(200).json(req.session.user);
+        res.status(200).json({ message: "User data updated successfully", user: req.session.user });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -93,7 +93,7 @@ router.delete("/delete", isAuthenticated, async (req, res) => {
 
       req.session.destroy();
       
-      res.status(204).send();
+      res.status(204).send({ message: "User deleted successfully. We hope to see you back soon." });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
