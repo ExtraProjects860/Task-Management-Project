@@ -38,7 +38,7 @@ class UserController {
             const userDoc = await usersCollection.where('email', '==', email).get();
 
             if (userDoc.empty) {
-                throw new Error("Email not found");
+                throw new Error("Invalid Email");
             }
 
             const user = userDoc.docs[0].data();
@@ -51,7 +51,7 @@ class UserController {
 
             return user;
         } catch (error) {
-            throw new Error("User not found");
+            throw new Error("Failed to login: " + error.message);
         }
     }
 
