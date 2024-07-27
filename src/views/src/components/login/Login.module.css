@@ -109,3 +109,10 @@ body {
 .button:hover {
     background-color: #50B498 !important;
 }
+
+.eyeIcon {
+    right: 10px; /* Ajusta a distância do ícone da borda direita do campo de senha */
+    top: 50%; /* Alinha verticalmente com o centro do campo de senha */
+    transform: translateY(-50%); /* Ajusta o alinhamento vertical */
+  }
+  

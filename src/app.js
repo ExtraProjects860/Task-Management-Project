@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const session = require("express-session");
+const corsOptions = require("./middlewares/corsPermissions"); 
 require('dotenv').config();
 
 const app = express();
@@ -16,15 +17,16 @@ const jsonErrorMiddleware = require("./middlewares/jsonErrorMiddleware");
 const isAuthenticated = require("./middlewares/authMiddleware");
 
 app.use(bodyParser.json());
-app.use(cors());
+
+app.use(cors(corsOptions));
 
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
-  cookie: {secure: false}
-}))
- 
+  cookie: { secure: false }
+}));
+
 app.use("/user", userRoutes);
 app.use("/tasks-lists", isAuthenticated, taskListRoutes);
 app.use("/tasks", isAuthenticated, taskRoutes);
@@ -33,5 +35,5 @@ app.use(routeMiddleware);
 app.use(jsonErrorMiddleware);
 
 app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+  console.log(`Server is running on http://localhost:${port}`);
 });

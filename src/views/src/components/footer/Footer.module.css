@@ -7,5 +7,9 @@
     background-color: #468585;
     color: white;
     text-align: center;
-  }
+}
+
+.footer a {
+    text-decoration: none;
+}
   
