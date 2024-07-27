@@ -1,111 +1,111 @@
+/* Estilo do body */
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #DEF9C4;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    margin: 0 !important;
+    font-family: Arial, sans-serif !important;
+    background-color: #ffffff !important;
+    height: 100vh !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
 }
 
-.loginContainer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+/* Estilo do LoginContainer */
+.formContainer {
     width: 100%;
     height: 100%;
 }
 
-.loginBox {
-    background-color: #FCFCFC;
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 300px;
+/* Estilo do LoginBox */
+.formBox {
+    background-color: #FCFCFC !important;
+    border-radius: 20px !important;
+    padding: 20px !important;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1) !important;
+    text-align: center !important;
+    width: 90% !important; /* Ajuste a largura para telas pequenas */
+    max-width: 600px !important; /* Ajuste a largura máxima para telas grandes */
 }
 
+/* Estilo do Logo */
 .logo img {
-    width: 100%;
-    height: auto;
+    width: 50% !important; /* Ajuste a largura da imagem para telas pequenas */
+    height: auto !important; 
+    margin-top: -5vw !important;
 }
 
-.logo h2 {
-    margin: 10px 0 5px;
-    font-size: 18px;
-    color: #333;
-}
-
+/* Estilo do Paragrafo */
 .logo p {
-    margin: 0 0 20px;
-    font-size: 14px;
-    color: #777;
+    margin: 0 0 20px !important;
+    font-size: 14px !important;
+    color: #777 !important;
+    margin-top: -2vw !important;
 }
 
+/* Estilo do Form */
 .formGroup {
-    margin-bottom: 15px;
-    text-align: left;
+    margin-bottom: 15px !important;
+    text-align: left !important; 
 }
 
+/* Estilo dos Labels */
 .formGroup label {
-    display: block;
-    font-size: 14px;
-    color: #066E96;
-    margin-bottom: 5px;
+    display: block !important;
+    font-size: 14px !important;
+    color: #066E96 !important;
+    margin-bottom: 5px !important;
 }
 
+/* Estilo dos Inputs */
 .formGroup input {
-    width: 100%;
-    padding: 10px;
-    font-size: 14px;
-    border: 1px solid #50B498;
-    border-radius: 5px;
-    box-sizing: border-box;
+    width: 100% !important; 
+    padding: 10px !important;
+    font-size: 14px !important;
+    border: 1px solid #50B498 !important;
+    border-radius: 5px !important;
+    box-sizing: border-box !important;
 }
 
 .formGroup input:focus {
-    outline: none;
-    border-color: #468585;
+    outline: none !important;
+    border-color: #468585 !important;
 }
 
+/* Estilo do Forgot Password e Create Account */
 .forgotPassword {
-    text-align: left;
-    margin-bottom: 20px;
+    text-align: left !important;
+    margin-bottom: 20px !important;
 }
 
 .forgotPassword a {
-    font-size: 12px;
-    color: #066E96;
+    font-size: 12px !important;
+    color: #066d9660 !important;
 }
 
 .createAccount {
-    text-align: left;
-    margin-bottom: 20px;
-    margin-top: 5px;
+    text-align: left !important;
+    margin-bottom: 20px !important;
+    margin-top: 5px !important;
+    text-align: center !important;
 }
 
 .createAccount a {
-    font-size: 12px;
-    color: #066E96;
+    font-size: 12px !important;
+    color: #066E96 !important;
+    text-decoration: none !important;
 }
 
-.loginButton {
-    width: 100%;
-    padding: 10px;
-    background-color: #468585;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
+/* Estilo do botão */
+.button {
+    width: 100% !important;
+    padding: 10px !important;
+    background-color: #468585 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 5px !important;
+    font-size: 16px !important;
+    cursor: pointer !important;
 }
 
-.loginButton:hover {
-    background-color: #50B498;
-}
-
-footer p {
-    margin: 20px 0 0;
-    font-size: 11px;
-    color: #999;
+.button:hover {
+    background-color: #50B498 !important;
 }

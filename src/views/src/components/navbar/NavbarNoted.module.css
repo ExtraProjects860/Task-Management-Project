@@ -1,0 +1,31 @@
+.customNavbar {
+  height: 80px !important; 
+  background-color: #468585 !important;
+  display: flex;
+  align-items: center;
+}
+
+.customNavbar .navbar-brand {
+  display: flex;
+  align-items: center;
+}
+
+.customNavbar .navbar-toggle {
+  margin-left: auto;
+}
+
+.logo {
+  height: 70px !important; 
+  width: auto !important;
+}
+
+@media (max-width: 576px) {
+  .customNavbar {
+      height: auto !important;
+      padding: 10px 15px !important;
+  }
+
+  .logo {
+      height: 50px !important;
+  }
+}
