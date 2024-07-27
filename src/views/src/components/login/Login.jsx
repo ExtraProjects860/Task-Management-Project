@@ -6,6 +6,7 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa'; // Importando ícones de olh
 import styles from './Login.module.css';
 import { login } from './LoginApi';
 
+
 function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');

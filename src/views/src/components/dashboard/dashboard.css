@@ -1,0 +1,48 @@
+
+  .header {
+    padding: 20px;
+    width: calc(100% - 250px); 
+    box-sizing: border-box;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .content {
+    flex: 1;
+    padding: 20px;
+    box-sizing: border-box;
+    margin-left: 250px; /* Espaçamento para a sidebar */
+  }
+  
+  .recent-access {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .boards-list {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .board {
+    background-color: #d4f0c4;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    flex: 1;
+    max-width: 150px;
+  }
+  
+  .board-icon {
+    font-size: 24px;
+    color: green;
+    margin-bottom: 10px;
+  }
+
+  
+  
