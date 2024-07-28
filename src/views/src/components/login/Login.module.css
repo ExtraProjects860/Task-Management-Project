@@ -3,7 +3,7 @@ body {
     margin: 0 !important;
     font-family: Arial, sans-serif !important;
     background-color: #ffffff !important;
-    height: 100vh !important;
+    min-height: 100vh !important;
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
@@ -12,7 +12,11 @@ body {
 /* Estilo do LoginContainer */
 .formContainer {
     width: 100%;
-    height: 100%;
+    height: auto; /* Ajusta para conteúdo flexível */
+    padding-top: 80px; /* Ajuste conforme a altura da sua navbar */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 /* Estilo do LoginBox */
@@ -114,5 +118,16 @@ body {
     right: 10px; /* Ajusta a distância do ícone da borda direita do campo de senha */
     top: 50%; /* Alinha verticalmente com o centro do campo de senha */
     transform: translateY(-50%); /* Ajusta o alinhamento vertical */
-  }
+}
+
+/* Estilo do Campo de Senha com Erro */
+.errorInput {
+    border-color: #e74c3c !important; /* Borda vermelha para indicar erro */
+}
   
+/* Estilo da Mensagem de Erro */
+.errorMessage {
+    color: #e74c3c;
+    font-size: 12px;
+    margin-top: 5px;
+}

@@ -13,6 +13,7 @@ body {
 .formContainer {
     width: 100%;
     height: 100%;
+    padding-top: 80px; /* Ajuste conforme a altura da sua navbar */
 }
 
 /* Estilo do LoginBox */
@@ -135,3 +136,11 @@ body {
     background-color: #50B498 !important;
     color: #ffffff !important;
 }
+
+/* Estilo do Ícone de Olho */
+.eyeIcon {
+    right: 10px; /* Ajusta a distância do ícone da borda direita do campo de senha */
+    top: 50%; /* Alinha verticalmente com o centro do campo de senha */
+    transform: translateY(-50%); /* Ajusta o alinhamento vertical */
+}
+  

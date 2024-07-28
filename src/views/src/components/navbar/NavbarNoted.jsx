@@ -5,7 +5,7 @@ import Style from './NavbarNoted.module.css';
 
 function NavbarNoted() {
   return (
-    <Navbar collapseOnSelect expand="lg" className={`${Style.customNavbar} bg-body-tertiary`} fixed="top"> 
+    <Navbar collapseOnSelect expand="lg" className={Style.customNavbar} fixed="top">
       <Container>
         <Navbar.Brand href="#home" className="d-flex align-items-center">
           <img
