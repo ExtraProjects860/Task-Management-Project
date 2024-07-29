@@ -27,6 +27,18 @@ router.post("/create", async (req, res) => {
 });
 
 
+// Rota para requisitar envio do token por email
+router.post("/request-password-reset", async (req, res) => {
+    const { email } = req.body;
+    try {
+        await UserController.requestPasswordReset(email);
+        res.status(200).json({ message: "Password reset token sent to your email" });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+
 // Rota para modificar a senha se esquecida
 router.post("/forgot-password", async (req, res) => {
     const { email, newPassword } = req.body;
