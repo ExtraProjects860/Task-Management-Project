@@ -1,23 +1,21 @@
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const FireBase = require("../config/Firebase");
-const usersCollection = FireBase.getConnection().collection("users");
 const User = require("../models/User");
+const Validators = require("./Validators/Validators");
 const EmailService = require('../util/EmailService');
+const usersCollection = FireBase.getConnection().collection("users");
 
 class UserController {
 
     static saltRounds = 10;
-
 
     // Cria usuário 
     static async createUser(email, name, password) {
         try {
             const userDoc = await usersCollection.where('email', '==', email).get();
 
-            if (!userDoc.empty) {
-                throw new Error("Email already exists. Please try another email.")
-            }
+            Validators.validateUserEmailExists(userDoc, "Email already exists. Please try another email.");
 
             const hashedPassword = await bcrypt.hash(password, this.saltRounds);
             const userId = await User.generateId();
@@ -37,17 +35,11 @@ class UserController {
         try {
             const userDoc = await usersCollection.where('email', '==', email).get();
 
-            if (userDoc.empty) {
-                throw new Error("Invalid Email");
-            }
+            Validators.validateUserDocEmail(userDoc, "Invalid Email");
 
             const user = userDoc.docs[0].data();
 
-            const passwordMatch = await bcrypt.compare(password, user.password);
-
-            if (!passwordMatch) {
-                throw new Error("Invalid password");
-            }
+            await Validators.validatePasswordData(password, user.password);
 
             return user;
         } catch (error) {
@@ -61,9 +53,7 @@ class UserController {
         try {
             const userDoc = await usersCollection.doc(id.toString()).get();
 
-            if (!userDoc.exists) {
-                throw new Error("User not found.");
-            }
+            Validators.validateUserDocExists(userDoc, "User not found");
 
             return userDoc.data();
         } catch (error) {
@@ -75,6 +65,8 @@ class UserController {
     // Modifica os dados do usuário
     static async updateDataUser(user, newName, newPassword) {
         try {
+            await Validators.validatePasswordUpdate(newPassword, user.password);
+
             const hashedPassword = await bcrypt.hash(newPassword, this.saltRounds);
 
             await usersCollection.doc(user.idUser.toString()).update({
@@ -97,10 +89,8 @@ class UserController {
         try {
             const userDoc = await usersCollection.where('email', '==', email).get();
     
-            if (userDoc.empty) {
-                throw new Error("Email not found");
-            }
-    
+            Validators.validateUserDocEmail(userDoc, "Email not found");
+
             const user = userDoc.docs[0].data();
             const token = crypto.randomBytes(4).toString('hex');
             const tokenExpiration = Date.now() + 30 * 60 * 1000;
@@ -119,45 +109,17 @@ class UserController {
 
     // Troca a senha caso usuário tenha esquecido
     static async forgotPasswordModify(email, newPassword, tokenPassword) {
-
-        async function validatePassword(newPassword, currentPassword) {
-            const passwordMatch = await bcrypt.compare(newPassword, currentPassword);
-
-            if (passwordMatch) {
-                throw new Error("This password is the same as the current one. Try another.");
-            }
-        }
-
-        async function validateToken(tokenPassword, passwordResetToken, userId) {
-            if (!passwordResetToken.token || passwordResetToken.token !== tokenPassword) {
-                throw new Error("Token is invalid or missing, try again");
-            }
-        
-            const currentTime = Date.now();
-        
-            if (passwordResetToken.tokenExpiration < currentTime) {
-                usersCollection.doc(userId).update({
-                    'passwordResetToken.token': null,
-                    'passwordResetToken.tokenExpiration': null
-                });
-                
-                throw new Error("Token has expired, please request a new one");
-            }
-        }
-
         // Código principal do método forgotPasswordModify
         try {
             const userDoc = await usersCollection.where('email', '==', email).get();
     
-            if (userDoc.empty) {
-                throw new Error("Email not found");
-            }
+            Validators.validateUserDocEmail(userDoc, "Email not found");
     
             const user = userDoc.docs[0].data();
 
-            await validatePassword(newPassword, user.password);
+            await Validators.validatePasswordUpdate(newPassword, user.password);
 
-            await validateToken(tokenPassword, user.passwordResetToken, user.idUser.toString());
+            await Validators.validateToken(tokenPassword, user.passwordResetToken, user.idUser.toString());
     
             const hashedPassword = await bcrypt.hash(newPassword, this.saltRounds);
     
@@ -177,17 +139,11 @@ class UserController {
         try {
             const userDoc = await usersCollection.where('email', '==', user.email).get();
 
-            if (userDoc.empty) {
-                throw new Error("User not found");
-            }
+            Validators.validateUserDocEmail(userDoc, "User not found");
 
             const userRecord = userDoc.docs[0].data();
 
-            const passwordMatch = await bcrypt.compare(password, user.password);
-
-            if (!passwordMatch) {
-                throw new Error("Invalid password");
-            }
+            await Validators.validatePasswordData(password, userRecord.password);
 
             await usersCollection.doc(userRecord.idUser.toString()).delete();
         } catch (error) {

@@ -5,7 +5,7 @@ const isAuthenticated = require("../middlewares/authMiddleware");
 
 
 // Rota para verificar os dados da sessão do usuário
-router.get("/session", (req, res) => {
+router.get("/session", isAuthenticated, (req, res) => {
     if (req.session.user) {
         res.status(200).json(req.session.user);
     } else {
@@ -20,12 +20,13 @@ router.post("/create", async (req, res) => {
     try {
         const user = await UserController.createUser(email, name, password);
 
-        res.status(201).json({ message: "User created successfully", user });
+        req.session.user = user;
+
+        res.status(201).json({ message: "User created successfully. Login user", user });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 });
-
 
 // Rota para requisitar envio do token por email
 router.post("/request-password-reset", async (req, res) => {
@@ -41,9 +42,9 @@ router.post("/request-password-reset", async (req, res) => {
 
 // Rota para modificar a senha se esquecida
 router.post("/forgot-password", async (req, res) => {
-    const { email, newPassword } = req.body;
+    const { email, newPassword, tokenPassword } = req.body;
     try {
-        await UserController.forgotPasswordModify(email, newPassword);
+        await UserController.forgotPasswordModify(email, newPassword, tokenPassword);
 
         res.status(200).json({ message: "Password updated successfully" });
     } catch (error) {
