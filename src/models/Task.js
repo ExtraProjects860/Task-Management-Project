@@ -2,6 +2,7 @@
 class Task {
     constructor(idTask, taskName, taskDescription, taskPriorite, taskStatus, taskInitialDate, taskFinalDate) {
         this.idTask = idTask;
+        this.createdAt = new Date().toISOString();
         this.taskName = taskName;
         this.taskDescription = taskDescription;
         this.taskPriorite = taskPriorite,
@@ -13,6 +14,7 @@ class Task {
     static toPlainObject(task) {
         return {
             idTask: task.idTask,
+            createdAt: task.createdAt,
             taskName: task.taskName,
             taskDescription: task.taskDescription,
             taskPriorite: task.taskPriorite,

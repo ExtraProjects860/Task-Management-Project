@@ -51,7 +51,7 @@ class EmailService {
                 throw new Error(`Error sending email to ${to}:`, error);
             }
         } catch (error) {
-            throw new Error("Error sending email something went wrong:" + error.message);
+            throw new Error(error.message);
         }
     }
 }
