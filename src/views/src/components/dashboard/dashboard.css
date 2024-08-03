@@ -22,27 +22,40 @@
     display: flex;
     flex-direction: column;
   }
-  
-  .boards-list {
+
+  .text-recent-access {
+    color: grey;
+    font-size: 15px;
     display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
-  
-  .board {
-    background-color: #d4f0c4;
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
-    flex: 1;
-    max-width: 150px;
-  }
-  
-  .board-icon {
-    font-size: 24px;
-    color: green;
-    margin-bottom: 10px;
   }
 
+
+  .card {
+    width: 26vh;
+    height: 30vh;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
   
+  .card-header {
+    background-color: #e0f7da; /* Ajuste a cor conforme necessário */
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
   
+  .card-icon {
+    width: 30px; /* Ajuste o tamanho conforme necessário */
+    height: 30px;
+  }
+  
+  .card-content {
+    margin-top: 20px;
+    text-align: center;
+  }
