@@ -9,7 +9,7 @@ function ErrorModal({ show, onHide, errorMessage }) {
       <Modal.Body className={styles.modalBody}>
         <h4>Erro</h4>
         <p>{errorMessage || "Ocorreu um erro. Tente novamente."}</p>
-        <Button className={styles.button} variant="primary" onClick={onHide}>
+        <Button className={styles.button}  onClick={onHide}>
           Fechar
         </Button>
       </Modal.Body>
