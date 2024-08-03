@@ -1,16 +1,15 @@
-/* src/components/errorModal/ErrorModal.module.css */
 .modalBody {
     text-align: center;
     padding: 20px;
   }
   
   .modalBody h4 {
-    color: #e74c3c; /* Cor do título de erro */
+    color: #e74c3c;
   }
   
   .modalBody p {
     margin-top: 10px;
-    color: #e74c3c; /* Cor da mensagem de erro */
+    color: #e74c3c;
   }
   
   .modalBody button {
@@ -22,14 +21,14 @@
   }
   
   .button {
-    background-color: #50B498; /* Cor de fundo normal */
-    border-color: #50B498; /* Cor da borda normal */
-    transition: background-color 0.3s, border-color 0.3s; /* Transição suave */
+    background-color: #50B498;
+    border-color: #50B498; 
+    transition: background-color 0.3s, border-color 0.3s;
   }
   
   .button:hover {
-    background-color: #3a9a8a; /* Cor de fundo no hover */
-    border-color: #3a9a8a; /* Cor da borda no hover */
+    background-color: #3a9a8a;
+    border-color: #3a9a8a;
   }
   
   
