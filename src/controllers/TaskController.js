@@ -37,7 +37,7 @@ class TaskController {
                 tasksLists: user.tasksLists
             });
 
-            return user;
+            return { updatedUser: user, updatedTasks: user.tasksLists[taskListIndex].tasks };
         } catch (error) {
             throw new Error("Failed to create task: " + error.message);
         }
@@ -71,7 +71,7 @@ class TaskController {
                 tasksLists: user.tasksLists
             });
 
-            return user;
+            return { updatedUser: user, updatedTasks: user.tasksLists[taskListIndex].tasks };
         } catch (error) {
             throw new Error("Failed to update: " + error.message);
         }
@@ -98,7 +98,7 @@ class TaskController {
                 tasksLists: user.tasksLists
             });
 
-            return user;
+            return { updatedUser: user, updatedTasks: user.tasksLists[taskListIndex].tasks };
         } catch (error) {
             throw new Error("Failed to delete: " + error.message);
         }
