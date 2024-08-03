@@ -1,7 +1,15 @@
-// src/components/auth/AuthLogin.js
 import { login } from '../login/LoginApi';
 
-export const validateAndAuthenticate = async (email, password, setEmailError, setPasswordError, setShowModal, setShowErrorModal, setErrorMessage, navigate) => {
+export const validateAndAuthenticate = async (
+  email, 
+  password, 
+  setEmailError, 
+  setPasswordError, 
+  setShowModal, 
+  setShowErrorModal, 
+  setErrorMessage, 
+  navigate
+) => {
   setShowModal(true); // Mostra o modal de carregamento
 
   // Resetar erros antes da tentativa de login
@@ -13,7 +21,7 @@ export const validateAndAuthenticate = async (email, password, setEmailError, se
     const response = await login(email, password);
     console.log("Login bem-sucedido, te redirecionando para página principal!", response);
     setTimeout(() => {
-      navigate('/');
+      navigate('/dashboard');
     }, 3000); // Aguarda 3 segundos antes de redirecionar
   } catch (error) {
     console.error("Erro durante Login:", error.message);
