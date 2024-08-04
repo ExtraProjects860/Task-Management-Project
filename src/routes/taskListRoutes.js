@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const TaskListControler = require("../controllers/TaskListController");
+const FireBase = require("../config/Firebase")
+const TaskListController = require("../controllers/TaskListController");
 
 
 // Rota para obter todas as listas de tarefas de um usuário
@@ -8,7 +9,9 @@ router.get("/all", async (req, res) => {
     try {
         const user = req.session.user;
 
-        const taskLists = await TaskListControler.getAllTaskList(user);
+        const taskListController = new TaskListController(null, null, null, FireBase);
+
+        const taskLists = await taskListController.getAllTaskList(user);
 
         res.status(200).json({ message: "Tasks lists retrieved successfully", tasksLists: taskLists });
     } catch (error) {
@@ -23,7 +26,9 @@ router.post("/create", async (req, res) => {
     try {
         const user = req.session.user;
 
-        const updatedUser = await TaskListControler.createTaskList(user, taskListName, taskListDescription);
+        const taskListController = new TaskListController(null, taskListName, taskListDescription, FireBase);
+
+        const updatedUser = await taskListController.createTaskList(user);
 
         req.session.user = updatedUser;
 
@@ -41,7 +46,9 @@ router.put("/update/:taskListId", async (req, res) => {
     try {
         const user = req.session.user;
 
-        const updatedUser = await TaskListControler.updateTaskList(user, parseInt(taskListId, 10), newTaskListName, newTaskListDescription);
+        const taskListController = new TaskListController(parseInt(taskListId, 10), newTaskListName, newTaskListDescription, FireBase);
+
+        const updatedUser = await taskListController.updateTaskList(user);
 
         req.session.user = updatedUser;
 
@@ -58,7 +65,9 @@ router.delete("/delete/:taskListId", async (req, res) => {
     try {
         const user = req.session.user;
 
-        const updatedUser = await TaskListControler.deleteTaskList(user, parseInt(taskListId, 10));
+        const taskListController = new TaskListController(parseInt(taskListId, 10), null, null, FireBase);
+
+        const updatedUser = await taskListController.deleteTaskList(user);
 
         req.session.user = updatedUser;
         

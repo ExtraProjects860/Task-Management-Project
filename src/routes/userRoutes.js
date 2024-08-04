@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const FireBase = require("../config/Firebase");
 const UserController = require("../controllers/UserController");
 const isAuthenticated = require("../middlewares/authMiddleware");
 
@@ -18,7 +19,9 @@ router.get("/session", isAuthenticated, (req, res) => {
 router.post("/create", async (req, res) => {
     const { email, name, password } = req.body;
     try {
-        const user = await UserController.createUser(email, name, password);
+        const userController = new UserController(null, email, name, password, FireBase);
+
+        const user = await userController.createUser();
 
         req.session.user = user;
 
@@ -32,7 +35,9 @@ router.post("/create", async (req, res) => {
 router.post("/request-password-reset", async (req, res) => {
     const { email } = req.body;
     try {
-        await UserController.requestPasswordReset(email);
+        const userController = new UserController(null, email, null, null, FireBase);
+
+        await userController.requestPasswordReset();
         res.status(200).json({ message: "Password reset token sent to your email" });
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -44,7 +49,9 @@ router.post("/request-password-reset", async (req, res) => {
 router.post("/forgot-password", async (req, res) => {
     const { email, newPassword, tokenPassword } = req.body;
     try {
-        await UserController.forgotPasswordModify(email, newPassword, tokenPassword);
+        const userController = new UserController(null, email, null, newPassword, FireBase);
+
+        await userController.forgotPasswordModify(tokenPassword);
 
         res.status(200).json({ message: "Password updated successfully" });
     } catch (error) {
@@ -53,17 +60,19 @@ router.post("/forgot-password", async (req, res) => {
 });
 
 
-// Rota para recuperar um usuário
+// Rota para recuperar um usuário e logar
 router.post("/login", async (req, res) => {
     const { email, password } = req.body;
     try {
-        const user = await UserController.loginUser(email, password);
+        const userController = new UserController(null, email, null, password, FireBase);
+
+        const user = await userController.loginUser();
 
         req.session.user = user;
 
         res.status(200).json({ message: `Logged in successfully ${user.email}`, user: req.session.user });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(404).json({ error: error.message });
     }
 });
 
@@ -85,7 +94,9 @@ router.put("/update", isAuthenticated, async (req, res) => {
     try {
         const user = req.session.user;
 
-        const updatedUser = await UserController.updateDataUser(user, newName, newPassword);
+        const userController = new UserController(null, null, newName, newPassword, FireBase);
+
+        const updatedUser = await userController.updateDataUser(user);
 
         req.session.user = updatedUser;
 
@@ -102,11 +113,13 @@ router.delete("/delete", isAuthenticated, async (req, res) => {
     try {
       const user = req.session.user;
 
-      await UserController.deleteUser(user, password);
+      const userController = new UserController(null, null, null, password, FireBase);
+
+      await userController.deleteUser(user);
 
       req.session.destroy();
       
-      res.status(204).send({ message: "User deleted successfully. We hope to see you back soon." });
+      res.status(204).json({ message: "User deleted successfully. We hope to see you back soon." });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
