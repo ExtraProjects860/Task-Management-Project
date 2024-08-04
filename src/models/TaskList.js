@@ -1,14 +1,34 @@
 
 class TaskList {
     constructor(idTaskList, taskListName, taskListDescription) {
-        this.idTaskList = idTaskList;
-        this.taskListName = taskListName;
-        this.taskListDescription = taskListDescription;
-        this.createdAt = new Date().toISOString();
-        this.task = [];
+        this.__idTaskList = idTaskList;
+        this.__createdAt = new Date().toISOString();
+        this.__taskListName = taskListName;
+        this.__taskListDescription = taskListDescription;
+        this.__task = [];
     }
 
-    static toPlainObject(taskList) {
+    get idTaskList() {
+        return this.__idTaskList;
+    }
+
+    get taskListName() {
+        return this.__taskListName;
+    }
+
+    get taskListDescription() {
+        return this.__taskListDescription;
+    }
+
+    get createdAt() {
+        return this.__createdAt;
+    }
+
+    get task() {
+        return this.__task;
+    }
+
+    toPlainObject(taskList) {
         return {
             idTaskList: taskList.idTaskList,
             taskListName: taskList.taskListName,
