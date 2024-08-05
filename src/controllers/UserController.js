@@ -1,8 +1,8 @@
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
+const axios = require('axios');
 const User = require("../models/User");
 const Validators = require("./Validators/Validators");
-const EmailService = require('../util/EmailService');
 
 class UserController extends User {
 
@@ -113,7 +113,14 @@ class UserController extends User {
                 'passwordResetToken.tokenExpiration': tokenExpiration
             });
 
-            await EmailService.sendEmail(this.email, "Redefinição de senha", token);
+            const response = await axios.post("http://localhost:5000/send-email", {
+                recipient: this.email,
+                subject: "Alerta de redefinição de senha",
+                message: "Você solicitou uma redefinição de senha. Por favor, use o seguinte token para redefinir sua senha:",
+                token: token
+            });
+
+            return response.data;
         } catch (error) {
             throw new Error("Failed to request password reset: " + error.message);
         }
