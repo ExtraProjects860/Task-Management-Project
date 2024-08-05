@@ -1,23 +1,25 @@
-const FireBase = require("../config/Firebase");
-const usersCollection = FireBase.getConnection().collection("users");
 const TaskList = require("../models/TaskList");
 
-class TaskListControler {
+class TaskListController extends TaskList {
 
+    constructor(idTaskList = null, taskListName = null, taskListDescription = null, db) {
+        super(idTaskList, taskListName, taskListDescription);
+        this.usersCollection = db.getConnection().collection("users");
+    }
 
     // Modifica nome e descrição da lista de tarefas
-    static async updateTaskList(user, taskListId, newTaskListName, newTaskListDescription) {
+    async updateTaskList(user) {
         try {
-            const taskListIndex = user.tasksLists.findIndex(taskList => taskList.idTaskList === taskListId);
+            const taskListIndex = user.tasksLists.findIndex(taskList => taskList.idTaskList === this.idTaskList);
 
             if (taskListIndex === -1) {
                 throw new Error("Task list not found.");
             }
 
-            user.tasksLists[taskListIndex].taskListName = newTaskListName;
-            user.tasksLists[taskListIndex].taskListDescription = newTaskListDescription;
+            user.tasksLists[taskListIndex].taskListName = this.taskListName;
+            user.tasksLists[taskListIndex].taskListDescription = this.taskListDescription;
 
-            await usersCollection.doc(user.idUser.toString()).update({
+            await this.usersCollection.doc(user.idUser.toString()).update({
                 tasksLists: user.tasksLists
             });
 
@@ -29,9 +31,9 @@ class TaskListControler {
 
 
     // Pega a lista de tarefas com todas as listas de tarefas
-    static async getAllTaskList(user) {
+    async getAllTaskList(user) {
         try {
-            const userDoc = await usersCollection.doc(user.idUser.toString()).get();
+            const userDoc = await this.usersCollection.doc(user.idUser.toString()).get();
     
             if (!userDoc.exists) {
                 throw new Error("User not found.");
@@ -45,7 +47,7 @@ class TaskListControler {
     
 
     // Cria uma nova lista de tarefas
-    static async createTaskList(user, taskListName, taskListDescription) {
+    async createTaskList(user) {
         try {
             const taskListIds = user.tasksLists.map(taskList => taskList.idTaskList);
                 
@@ -54,15 +56,15 @@ class TaskListControler {
                 newIdTaskList ++;
             }
                 
-            const newTaskList = TaskList.toPlainObject(new TaskList(
+            const newTaskList = this.toPlainObject(new TaskList(
                 newIdTaskList,
-                taskListName,
-                taskListDescription
+                this.taskListName,
+                this.taskListDescription
             ));
     
             user.tasksLists.push(newTaskList);
     
-            await usersCollection.doc(user.idUser.toString()).update({
+            await this.usersCollection.doc(user.idUser.toString()).update({
                 tasksLists: user.tasksLists
             });
     
@@ -74,9 +76,9 @@ class TaskListControler {
     
 
     // Deleta lista de tarefas específica
-    static async deleteTaskList(user, taskListId) {
+    async deleteTaskList(user) {
         try {
-            const taskListIndex = user.tasksLists.findIndex(taskList => taskList.idTaskList === taskListId);
+            const taskListIndex = user.tasksLists.findIndex(taskList => taskList.idTaskList === this.idTaskList);
     
             if (taskListIndex === -1) {
                 throw new Error("Task list not found.");
@@ -84,7 +86,7 @@ class TaskListControler {
     
             user.tasksLists.splice(taskListIndex, 1);
 
-            await usersCollection.doc(user.idUser.toString()).update({
+            await this.usersCollection.doc(user.idUser.toString()).update({
                 tasksLists: user.tasksLists
             });
     
@@ -97,4 +99,4 @@ class TaskListControler {
 }
 
 
-module.exports = TaskListControler;
+module.exports = TaskListController;

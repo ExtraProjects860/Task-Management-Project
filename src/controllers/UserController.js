@@ -1,27 +1,55 @@
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
-const FireBase = require("../config/Firebase");
+const axios = require('axios');
 const User = require("../models/User");
 const Validators = require("./Validators/Validators");
-const EmailService = require('../util/EmailService');
-const usersCollection = FireBase.getConnection().collection("users");
 
-class UserController {
+class UserController extends User {
 
     static saltRounds = 10;
 
-    // Cria usuário 
-    static async createUser(email, name, password) {
+    constructor(idUser = null, email = null, name = null, password = null, db) {
+        super(idUser, email, name, password);
+        this.usersCollection = db.getConnection().collection("users");
+    }
+
+    async generateIdUser() {
         try {
-            const userDoc = await usersCollection.where('email', '==', email).get();
+            const snapshot = await this.usersCollection.get();
+
+            const userIds = snapshot.docs.map(doc => parseInt(doc.id, 10));
+
+            let newId = 1;
+
+            while (userIds.includes(newId)) {
+                newId++;
+            }
+
+            return newId;
+        } catch (error) {
+            throw new Error("Failed to generate ID: " + error.message);
+        }
+    }
+
+    // Cria usuário 
+    async createUser() {
+        try {
+            const userDoc = await this.usersCollection.where('email', '==', this.email).get();
 
             Validators.validateUserEmailExists(userDoc, "Email already exists. Please try another email.");
 
-            const hashedPassword = await bcrypt.hash(password, this.saltRounds);
-            const userId = await User.generateId();
-            const user = new User(userId, email, name, hashedPassword);
+            this.password = await bcrypt.hash(this.password, UserController.saltRounds);
 
-            await usersCollection.doc(user.idUser.toString()).set(User.toPlainObject(user));
+            const idUser = await this.generateIdUser();
+
+            const user = this.toPlainObject(
+                idUser,
+                this.email,
+                this.name,
+                this.password
+            )
+
+            await this.usersCollection.doc(idUser.toString()).set(user);
 
             return user;
         } catch(error) {
@@ -31,15 +59,15 @@ class UserController {
 
 
     // Recupera usuário para logar
-    static async loginUser(email, password) {
+    async loginUser() {
         try {
-            const userDoc = await usersCollection.where('email', '==', email).get();
+            const userDoc = await this.usersCollection.where('email', '==', this.email).get();
 
             Validators.validateUserDocEmail(userDoc, "Invalid Email");
 
             const user = userDoc.docs[0].data();
 
-            await Validators.validatePasswordData(password, user.password);
+            await Validators.validatePasswordData(this.password, user.password);
 
             return user;
         } catch (error) {
@@ -47,34 +75,19 @@ class UserController {
         }
     }
 
-
-    // Recupera usuário a partir do id (método não sendo utilizado no momento, pois a aplicação está utilizando sessão)
-    static async getUserById(id) {
-        try {
-            const userDoc = await usersCollection.doc(id.toString()).get();
-
-            Validators.validateUserDocExists(userDoc, "User not found");
-
-            return userDoc.data();
-        } catch (error) {
-            throw new Error("Failed to get user: " + error.message);
-        }
-    }
-
-
     // Modifica os dados do usuário
-    static async updateDataUser(user, newName, newPassword) {
+    async updateDataUser(user) {
         try {
-            await Validators.validatePasswordUpdate(newPassword, user.password);
+            await Validators.validatePasswordUpdate(this.password, user.password);
 
-            const hashedPassword = await bcrypt.hash(newPassword, this.saltRounds);
+            const hashedPassword = await bcrypt.hash(this.password, UserController.saltRounds);
 
-            await usersCollection.doc(user.idUser.toString()).update({
-                name: newName,
+            await this.usersCollection.doc(user.idUser.toString()).update({
+                name: this.name,
                 password: hashedPassword
             })
 
-            user.name = newName;
+            user.name = this.name;
             user.password = hashedPassword;
             
             return user;
@@ -85,9 +98,9 @@ class UserController {
 
 
     // Envia um email para o usuário com token
-    static async requestPasswordReset(email) {
+    async requestPasswordReset() {
         try {
-            const userDoc = await usersCollection.where('email', '==', email).get();
+            const userDoc = await this.usersCollection.where('email', '==', this.email).get();
     
             Validators.validateUserDocEmail(userDoc, "Email not found");
 
@@ -95,12 +108,19 @@ class UserController {
             const token = crypto.randomBytes(4).toString('hex');
             const tokenExpiration = Date.now() + 30 * 60 * 1000;
     
-            await usersCollection.doc(user.idUser.toString()).update({
+            await this.usersCollection.doc(user.idUser.toString()).update({
                 'passwordResetToken.token': token,
                 'passwordResetToken.tokenExpiration': tokenExpiration
             });
 
-            await EmailService.sendEmail(user.email, "Redefinição de senha", token);
+            const response = await axios.post("http://localhost:5000/send-email", {
+                recipient: this.email,
+                subject: "Alerta de redefinição de senha",
+                message: "Você solicitou uma redefinição de senha. Por favor, use o seguinte token para redefinir sua senha:",
+                token: token
+            });
+
+            return response.data;
         } catch (error) {
             throw new Error("Failed to request password reset: " + error.message);
         }
@@ -108,22 +128,22 @@ class UserController {
     
 
     // Troca a senha caso usuário tenha esquecido
-    static async forgotPasswordModify(email, newPassword, tokenPassword) {
+    async forgotPasswordModify(tokenPassword) {
         // Código principal do método forgotPasswordModify
         try {
-            const userDoc = await usersCollection.where('email', '==', email).get();
+            const userDoc = await this.usersCollection.where('email', '==', this.email).get();
     
             Validators.validateUserDocEmail(userDoc, "Email not found");
     
             const user = userDoc.docs[0].data();
 
-            await Validators.validatePasswordUpdate(newPassword, user.password);
+            await Validators.validatePasswordUpdate(this.password, user.password);
 
             await Validators.validateToken(tokenPassword, user.passwordResetToken, user.idUser.toString());
     
-            const hashedPassword = await bcrypt.hash(newPassword, this.saltRounds);
+            const hashedPassword = await bcrypt.hash(this.password, UserController.saltRounds);
     
-            await usersCollection.doc(user.idUser.toString()).update({
+            await this.usersCollection.doc(user.idUser.toString()).update({
                 password: hashedPassword,
                 'passwordResetToken.token': null,
                 'passwordResetToken.tokenExpiration': null
@@ -135,17 +155,17 @@ class UserController {
 
 
     // Deleta usuário do banco de dados
-    static async deleteUser(user, password) {
+    async deleteUser(user) {
         try {
-            const userDoc = await usersCollection.where('email', '==', user.email).get();
+            const userDoc = await this.usersCollection.where('email', '==', user.email).get();
 
             Validators.validateUserDocEmail(userDoc, "User not found");
 
             const userRecord = userDoc.docs[0].data();
 
-            await Validators.validatePasswordData(password, userRecord.password);
+            await Validators.validatePasswordData(this.password, userRecord.password);
 
-            await usersCollection.doc(userRecord.idUser.toString()).delete();
+            await this.usersCollection.doc(userRecord.idUser.toString()).delete();
         } catch (error) {
             throw new Error("Failed to delete user: " + error.message);
         }

@@ -9,7 +9,7 @@ class EmailService {
             service: "gmail",
             auth: {
                 user: process.env.EMAIL_SERVICE,
-                pass: process.env.EMAIL_APP_PASSWORD // colocar senha de app aqui
+                pass: process.env.EMAIL_APP_PASSWORD
             }
         });
     }

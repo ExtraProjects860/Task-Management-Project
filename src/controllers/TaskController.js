@@ -1,12 +1,14 @@
-const FireBase = require("../config/Firebase");
-const usersCollection = FireBase.getConnection().collection("users");
 const Task = require("../models/Task");
 
-class TaskController {
+class TaskController extends Task {
 
+    constructor(idTask = null, taskName = null, taskDescription = null, taskPriorite = null, taskStatus = null, taskInitialDate = null, taskFinalDate = null, db) {
+        super(idTask, taskName, taskDescription, taskPriorite, taskStatus, taskInitialDate, taskFinalDate);
+        this.usersCollection = db.getConnection().collection("users");
+    }
 
     // Cria Tarefa
-    static async createTask(user, taskListId, taskData) {
+    async createTask(user, taskListId) {
         try {
             const taskListIndex = user.tasksLists.findIndex(taskList => taskList.idTaskList === taskListId);
 
@@ -21,19 +23,19 @@ class TaskController {
                 newIdTask ++;
             }
                 
-            const newTask = Task.toPlainObject(new Task(
+            const newTask = this.toPlainObject(new Task(
                 newIdTask,
-                taskData.taskName,
-                taskData.taskDescription,
-                taskData.taskPriorite,
-                taskData.taskStatus,
-                taskData.taskInitialDate,
-                taskData.taskFinalDate
+                this.taskName,
+                this.taskDescription,
+                this.taskPriorite,
+                this.taskStatus,
+                this.taskInitialDate,
+                this.taskFinalDate
             ));
     
             user.tasksLists[taskListIndex].tasks.push(newTask);
         
-            await usersCollection.doc(user.idUser.toString()).update({
+            await this.usersCollection.doc(user.idUser.toString()).update({
                 tasksLists: user.tasksLists
             });
 
@@ -45,7 +47,7 @@ class TaskController {
     
 
     // Modifica tarefa específica
-    static async updateTask(user, taskListId, taskId, newTaskData) {
+    async updateTask(user, taskListId) {
         try {
             const taskListIndex = user.tasksLists.findIndex(taskList => taskList.idTaskList === taskListId);
 
@@ -53,21 +55,21 @@ class TaskController {
                 throw new Error("Task list not found.");
             }
 
-            const taskIndex = user.tasksLists[taskListIndex].tasks.findIndex(task => task.idTask === taskId);
+            const taskIndex = user.tasksLists[taskListIndex].tasks.findIndex(task => task.idTask === this.idTask);
 
             if (taskIndex === -1) {
                 throw new Error("Task not found.");
             }
 
             const task = user.tasksLists[taskListIndex].tasks[taskIndex];
-            task.taskName = newTaskData.taskName;
-            task.taskDescription = newTaskData.taskDescription;
-            task.taskPriorite = newTaskData.taskPriorite;
-            task.taskStatus = newTaskData.taskStatus;
-            task.taskInitialDate = newTaskData.taskInitialDate;
-            task.taskFinalDate = newTaskData.taskFinalDate;
+            task.taskName = this.taskName;
+            task.taskDescription = this.taskDescription;
+            task.taskPriorite = this.taskPriorite;
+            task.taskStatus = this.taskStatus;
+            task.taskInitialDate = this.taskInitialDate;
+            task.taskFinalDate = this.taskFinalDate;
 
-            await usersCollection.doc(user.idUser.toString()).update({
+            await this.usersCollection.doc(user.idUser.toString()).update({
                 tasksLists: user.tasksLists
             });
 
@@ -78,7 +80,7 @@ class TaskController {
     }
 
 
-    static async deleteTask(user, taskListId, taskId) {
+    async deleteTask(user, taskListId) {
         try {
             const taskListIndex = user.tasksLists.findIndex(taskList => taskList.idTaskList === taskListId);
 
@@ -86,7 +88,7 @@ class TaskController {
                 throw new Error("Task list not found.");
             }
 
-            const taskIndex = user.tasksLists[taskListIndex].tasks.findIndex(task => task.idTask === taskId);
+            const taskIndex = user.tasksLists[taskListIndex].tasks.findIndex(task => task.idTask === this.idTask);
 
             if (taskIndex === -1) {
                 throw new Error("Task not found.");
@@ -94,7 +96,7 @@ class TaskController {
 
             user.tasksLists[taskListIndex].tasks.splice(taskIndex, 1);
 
-            await usersCollection.doc(user.idUser.toString()).update({
+            await this.usersCollection.doc(user.idUser.toString()).update({
                 tasksLists: user.tasksLists
             });
 
@@ -106,9 +108,9 @@ class TaskController {
 
 
     // Pega todas as tarefas
-    static async getAllTask(user, taskListId) {
+    async getAllTask(user, taskListId) {
         try {
-            const userDoc = await usersCollection.doc(user.idUser.toString()).get();
+            const userDoc = await this.usersCollection.doc(user.idUser.toString()).get();
 
             if (!userDoc.exists) {
                 throw new Error("User not found.");
