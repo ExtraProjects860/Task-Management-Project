@@ -4,7 +4,8 @@
   "description": "Este é um projeto acadêmico a ser desenvolvido para criar um sistema de lista de tarefas, como uma APIRESTFUL. O sistema tem como objetivo permitir que usuário se registrem na plataforma e consigam criar/gerenciar várias listas de tarefas contendo nelas suas respectivas tarefas de forma organizada.",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "dev": "nodemon app.js"
   },
   "keywords": [],
   "author": "davi",
@@ -23,6 +24,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.24.8",
     "@babel/register": "^7.24.6",
-    "chai-as-promised": "^8.0.0"
+    "chai-as-promised": "^8.0.0",
+    "nodemon": "^3.1.4"
   }
 }

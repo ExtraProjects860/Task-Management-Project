@@ -11,7 +11,7 @@ router.get("/all", async (req, res) => {
 
         const taskListController = new TaskListController(null, null, null, FireBase);
 
-        const taskLists = await taskListController.getAllTaskList(user);
+        const taskLists = await taskListController.getAllTaskList(user.idUser);
 
         res.status(200).json({ message: "Tasks lists retrieved successfully", tasksLists: taskLists });
     } catch (error) {
@@ -28,11 +28,9 @@ router.post("/create", async (req, res) => {
 
         const taskListController = new TaskListController(null, taskListName, taskListDescription, FireBase);
 
-        const updatedUser = await taskListController.createTaskList(user);
+        const updatedTaskLists = await taskListController.createTaskList(user.idUser);
 
-        req.session.user = updatedUser;
-
-        res.status(201).json({ message: "Task list created successfully", tasksLists: updatedUser.tasksLists });
+        res.status(201).json({ message: "Task list created successfully", tasksLists: updatedTaskLists });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -48,11 +46,9 @@ router.put("/update/:taskListId", async (req, res) => {
 
         const taskListController = new TaskListController(parseInt(taskListId, 10), newTaskListName, newTaskListDescription, FireBase);
 
-        const updatedUser = await taskListController.updateTaskList(user);
+        const updatedTaskLists = await taskListController.updateTaskList(user.idUser);
 
-        req.session.user = updatedUser;
-
-        res.status(200).json({ message: "Task list updated successfully", tasksLists: updatedUser.tasksLists });
+        res.status(200).json({ message: "Task list updated successfully", tasksLists: updatedTaskLists });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -67,11 +63,9 @@ router.delete("/delete/:taskListId", async (req, res) => {
 
         const taskListController = new TaskListController(parseInt(taskListId, 10), null, null, FireBase);
 
-        const updatedUser = await taskListController.deleteTaskList(user);
-
-        req.session.user = updatedUser;
+        const updatedTaskLists = await taskListController.deleteTaskList(user.idUser);
         
-        res.status(204).send({ message: "Task list deleted successfully", tasksLists: updatedUser.tasksLists });
+        res.status(204).json({ message: "Task list deleted successfully", tasksLists: updatedTaskLists });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }

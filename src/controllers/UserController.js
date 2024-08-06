@@ -8,11 +8,12 @@ class UserController extends User {
 
     static saltRounds = 10;
 
-    constructor(idUser = null, email = null, name = null, password = null, db) {
+    constructor(idUser = null, email = null, name = null, password = null, db = null) {
         super(idUser, email, name, password);
         this.usersCollection = db.getConnection().collection("users");
     }
 
+    // Gera id sequencial e específico para cada usuário
     async generateIdUser() {
         try {
             const snapshot = await this.usersCollection.get();
@@ -51,7 +52,7 @@ class UserController extends User {
 
             await this.usersCollection.doc(idUser.toString()).set(user);
 
-            return user;
+            return { idUser: user.idUser, email: user.email, name: user.name, password: user.password, createdAt: user.createdAt };
         } catch(error) {
             throw new Error("Failed to create user: " + error.message);
         }
@@ -69,26 +70,31 @@ class UserController extends User {
 
             await Validators.validatePasswordData(this.password, user.password);
 
-            return user;
+            return { idUser: user.idUser, email: user.email, name: user.name, password: user.password, createdAt: user.createdAt };
         } catch (error) {
             throw new Error("Failed to login: " + error.message);
         }
     }
 
     // Modifica os dados do usuário
-    async updateDataUser(user) {
+    async updateDataUser(idUser) {
         try {
-            await Validators.validatePasswordUpdate(this.password, user.password);
+            const userDoc = await this.usersCollection.where('idUser', '==', idUser).get();
+
+            const userRecord = userDoc.docs[0].data();
+
+            await Validators.validatePasswordUpdate(this.password, userRecord.password);
 
             const hashedPassword = await bcrypt.hash(this.password, UserController.saltRounds);
 
-            await this.usersCollection.doc(user.idUser.toString()).update({
+            await this.usersCollection.doc(idUser.toString()).update({
                 name: this.name,
                 password: hashedPassword
             })
 
-            user.name = this.name;
-            user.password = hashedPassword;
+            const updatedDoc = await this.usersCollection.doc(idUser.toString()).get();
+
+            const user = updatedDoc.data();
             
             return user;
         } catch (error) {
@@ -129,7 +135,6 @@ class UserController extends User {
 
     // Troca a senha caso usuário tenha esquecido
     async forgotPasswordModify(tokenPassword) {
-        // Código principal do método forgotPasswordModify
         try {
             const userDoc = await this.usersCollection.where('email', '==', this.email).get();
     
@@ -155,9 +160,9 @@ class UserController extends User {
 
 
     // Deleta usuário do banco de dados
-    async deleteUser(user) {
+    async deleteUser(idUser) {
         try {
-            const userDoc = await this.usersCollection.where('email', '==', user.email).get();
+            const userDoc = await this.usersCollection.where('idUser', '==', idUser).get();
 
             Validators.validateUserDocEmail(userDoc, "User not found");
 
@@ -170,6 +175,7 @@ class UserController extends User {
             throw new Error("Failed to delete user: " + error.message);
         }
     }
+
 
 }
 

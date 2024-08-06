@@ -2,29 +2,43 @@ const Task = require("../models/Task");
 
 class TaskController extends Task {
 
-    constructor(idTask = null, taskName = null, taskDescription = null, taskPriorite = null, taskStatus = null, taskInitialDate = null, taskFinalDate = null, db) {
+    constructor(idTask = null, taskName = null, taskDescription = null, taskPriorite = null, taskStatus = null, taskInitialDate = null, taskFinalDate = null, db =null) {
         super(idTask, taskName, taskDescription, taskPriorite, taskStatus, taskInitialDate, taskFinalDate);
         this.usersCollection = db.getConnection().collection("users");
     }
 
-    // Cria Tarefa
-    async createTask(user, taskListId) {
+
+    // Gera id sequencial e específico para cada tarefa
+    async generateIdTask(idUser, taskListId, taskListController) {
         try {
-            const taskListIndex = user.tasksLists.findIndex(taskList => taskList.idTaskList === taskListId);
+            const allTaskList = await taskListController.getAllTaskList(idUser);
+
+            const taskListIndex = allTaskList.findIndex(taskList => taskList.idTaskList === taskListId);
 
             if (taskListIndex === -1) {
                 throw new Error(`Task list with idTaskList ${taskListId} not found`);
             }
 
-            const taskIds = user.tasksLists[taskListIndex].tasks.map(task => task.idTask);
+            const taskIds = allTaskList[taskListIndex].tasks.map(task => task.idTask);
                 
             let newIdTask = 1;
             while (taskIds.includes(newIdTask)) {
                 newIdTask ++;
             }
+
+            return { newIdTask: newIdTask, taskListIndex: taskListIndex, allTaskList: allTaskList };
+        } catch (error) {
+            throw new Error("Failed to generate ID: " + error.message);
+        }
+    }
+
+    // Cria Tarefa
+    async createTask(idUser, taskListId, taskController) {
+        try {
+            const data = await this.generateIdTask(idUser, taskListId, taskController);
                 
             const newTask = this.toPlainObject(new Task(
-                newIdTask,
+                data.newIdTask,
                 this.taskName,
                 this.taskDescription,
                 this.taskPriorite,
@@ -32,14 +46,16 @@ class TaskController extends Task {
                 this.taskInitialDate,
                 this.taskFinalDate
             ));
+
+            console.log(newTask);
     
-            user.tasksLists[taskListIndex].tasks.push(newTask);
+            data.allTaskList[data.taskListIndex].tasks.push(newTask);
         
-            await this.usersCollection.doc(user.idUser.toString()).update({
-                tasksLists: user.tasksLists
+            await this.usersCollection.doc(idUser.toString()).update({
+                tasksLists: data.allTaskList
             });
 
-            return { updatedUser: user, updatedTasks: user.tasksLists[taskListIndex].tasks };
+            return data.allTaskList[data.taskListIndex].tasks;
         } catch (error) {
             throw new Error("Failed to create task: " + error.message);
         }
@@ -47,21 +63,23 @@ class TaskController extends Task {
     
 
     // Modifica tarefa específica
-    async updateTask(user, taskListId) {
+    async updateTask(idUser, taskListId, taskListController) {
         try {
-            const taskListIndex = user.tasksLists.findIndex(taskList => taskList.idTaskList === taskListId);
+            const allTaskList = await taskListController.getAllTaskList(idUser);
+
+            const taskListIndex = allTaskList.findIndex(taskList => taskList.idTaskList === taskListId);
 
             if (taskListIndex === -1) {
                 throw new Error("Task list not found.");
             }
 
-            const taskIndex = user.tasksLists[taskListIndex].tasks.findIndex(task => task.idTask === this.idTask);
+            const taskIndex = allTaskList[taskListIndex].tasks.findIndex(task => task.idTask === this.idTask);
 
             if (taskIndex === -1) {
                 throw new Error("Task not found.");
             }
 
-            const task = user.tasksLists[taskListIndex].tasks[taskIndex];
+            const task = allTaskList[taskListIndex].tasks[taskIndex];
             task.taskName = this.taskName;
             task.taskDescription = this.taskDescription;
             task.taskPriorite = this.taskPriorite;
@@ -69,38 +87,40 @@ class TaskController extends Task {
             task.taskInitialDate = this.taskInitialDate;
             task.taskFinalDate = this.taskFinalDate;
 
-            await this.usersCollection.doc(user.idUser.toString()).update({
-                tasksLists: user.tasksLists
+            await this.usersCollection.doc(idUser.toString()).update({
+                tasksLists: allTaskList
             });
 
-            return { updatedUser: user, updatedTasks: user.tasksLists[taskListIndex].tasks };
+            return allTaskList[taskListIndex].tasks ;
         } catch (error) {
             throw new Error("Failed to update: " + error.message);
         }
     }
 
 
-    async deleteTask(user, taskListId) {
+    async deleteTask(idUser, taskListId, taskListController) {
         try {
-            const taskListIndex = user.tasksLists.findIndex(taskList => taskList.idTaskList === taskListId);
+            const allTaskList = await taskListController.getAllTaskList(idUser);
+
+            const taskListIndex = allTaskList.findIndex(taskList => taskList.idTaskList === taskListId);
 
             if (taskListIndex === -1) {
                 throw new Error("Task list not found.");
             }
 
-            const taskIndex = user.tasksLists[taskListIndex].tasks.findIndex(task => task.idTask === this.idTask);
+            const taskIndex = allTaskList[taskListIndex].tasks.findIndex(task => task.idTask === this.idTask);
 
             if (taskIndex === -1) {
                 throw new Error("Task not found.");
             }
 
-            user.tasksLists[taskListIndex].tasks.splice(taskIndex, 1);
+            allTaskList[taskListIndex].tasks.splice(taskIndex, 1);
 
-            await this.usersCollection.doc(user.idUser.toString()).update({
-                tasksLists: user.tasksLists
+            await this.usersCollection.doc(idUser.toString()).update({
+                tasksLists: allTaskList
             });
 
-            return { updatedUser: user, updatedTasks: user.tasksLists[taskListIndex].tasks };
+            return allTaskList[taskListIndex].tasks;
         } catch (error) {
             throw new Error("Failed to delete: " + error.message);
         }
@@ -108,15 +128,9 @@ class TaskController extends Task {
 
 
     // Pega todas as tarefas
-    async getAllTask(user, taskListId) {
+    async getAllTask(idUser, taskListId, taskListController) {
         try {
-            const userDoc = await this.usersCollection.doc(user.idUser.toString()).get();
-
-            if (!userDoc.exists) {
-                throw new Error("User not found.");
-            }
-
-            const tasksLists = userDoc.data().tasksLists;
+            const tasksLists = await taskListController.getAllTaskList(idUser);
 
             const taskList = tasksLists.find(list => list.idTaskList === taskListId);
 
@@ -130,6 +144,7 @@ class TaskController extends Task {
         }
     }
     
+
 }
 
 
