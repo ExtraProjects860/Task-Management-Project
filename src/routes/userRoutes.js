@@ -37,8 +37,8 @@ router.post("/request-password-reset", async (req, res) => {
     try {
         const userController = new UserController(null, email, null, null, FireBase);
 
-        await userController.requestPasswordReset();
-        res.status(200).json({ message: "Password reset token sent to your email" });
+        const status = await userController.requestPasswordReset();
+        res.status(200).json({ message: status });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -96,7 +96,7 @@ router.put("/update", isAuthenticated, async (req, res) => {
 
         const userController = new UserController(null, null, newName, newPassword, FireBase);
 
-        const updatedUser = await userController.updateDataUser(user);
+        const updatedUser = await userController.updateDataUser(user.idUser);
 
         req.session.user = updatedUser;
 
@@ -115,7 +115,7 @@ router.delete("/delete", isAuthenticated, async (req, res) => {
 
       const userController = new UserController(null, null, null, password, FireBase);
 
-      await userController.deleteUser(user);
+      await userController.deleteUser(user.idUser);
 
       req.session.destroy();
       
