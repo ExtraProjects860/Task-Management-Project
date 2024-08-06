@@ -1,49 +1,60 @@
 import { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Offcanvas from 'react-bootstrap/Offcanvas';
-import './sidebarNoted.css'
+import './sidebarNoted.css';
+import { BsSearch, BsHouse, BsFillGearFill, BsPlusLg, BsCheck2 } from "react-icons/bs";
 
-function Sidebar() {
+const Sidebar = ({ taskLists }) => {
   const [show, setShow] = useState(true);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+  const name = localStorage.getItem('name');
+  const firstLetter = name.charAt(0);
 
   return (
     <>
-      <Button variant="primary" onClick={handleShow}>
-        Launch
+      <Button className='btnMenu' onClick={handleShow}>
+        Menu
       </Button>
 
-      <Offcanvas show={show} onHide={handleClose}>
+      <Offcanvas style= {{background: '#DEF9C4'}} show={show} onHide={handleClose}>
         <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Sidedbar</Offcanvas.Title>
+          <Offcanvas.Title></Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body>
-        <aside className="sidebar">
+        <div className="sidebar">
         <div className="profile">
-          <div className="avatar">F</div>
-          <div className="username">Fulano</div>
+          <div className="avatar">{firstLetter}</div>
+          <div className="username">{name}</div>
         </div>
         <nav className="menu">
           <ul>
-            <li><a href="#">Pesquisar</a></li>
-            <li><a href="#">Página inicial</a></li>
-            <li><a href="#">Alterar Dados</a></li>
+            <li><a href="#"> <BsSearch className='icons' /> Filtrar</a></li>
+            <li><a href="#"> <BsHouse className='icons' /> Página inicial</a></li>
+            <li><a href="#"> <BsFillGearFill className='icons' /> Alterar Dados</a></li>
           </ul>
         </nav>
+        <br/>
+        <hr/>
+        <br/>
         <div className="boards">
           <ul>
-            <li><a href="#">Novo</a></li>
-            <li><a href="#">Quadro 2</a></li>
-            <li><a href="#">Quadro 3</a></li>
-            <li><a href="#">Quadro 4</a></li>
-            <li><a href="#">Lista de Tarefas</a></li>
-            <li><a href="#">Projeto x</a></li>
+            <li><a href="#"> <BsPlusLg className='icons' /> Novo</a></li>
           </ul>
+          <ul>{taskLists.length > 0 ? (
+          taskLists.map((lista) => (
+            <li  key={lista.idTaskList} className="sidebar-item"> <a href="#"> <BsCheck2 className='icons' />
+              {lista.taskListName} </a>
+            </li>
+          ))
+        ) : (
+          <li className="sidebar-item">No lists available</li>
+        )}
+      </ul>
         </div>
         <button className="logout">Sair</button>
-      </aside>
+      </div>
         </Offcanvas.Body>
       </Offcanvas>
     </>

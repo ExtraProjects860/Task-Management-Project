@@ -1,3 +1,6 @@
+
+
+
 export async function login(email, password) {
     try {
         const response = await fetch('http://localhost:3001/user/login', {
@@ -10,6 +13,8 @@ export async function login(email, password) {
         });
 
         if (response.ok) {
+        let answer = await response.json();
+            localStorage.setItem('name', answer?.user?.name);
             return await response.json();
         } else {
             const errorData = await response.json();
